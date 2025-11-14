@@ -7,13 +7,13 @@ from src.core.config import settings
 from src.core.logger import logger
 
 config = ConnectionConfig(
-    MAIL_USERNAME=settings.mail_username,
+    MAIL_USERNAME=settings.mail_user,
     MAIL_PASSWORD=settings.mail_password,
-    MAIL_SERVER=settings.mail_server,
+    MAIL_SERVER=settings.mail_host,
     MAIL_PORT=settings.mail_port,
     MAIL_STARTTLS=settings.mail_start_tls,
     MAIL_SSL_TLS=settings.mail_use_tls,
-    MAIL_FROM=settings.mail_from,
+    MAIL_FROM=settings.mail_from_email,
     MAIL_FROM_NAME=settings.mail_from_name,
     USE_CREDENTIALS=settings.mail_use_credentials,
     TEMPLATE_FOLDER=Path(__file__).parent / "templates",

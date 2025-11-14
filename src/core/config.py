@@ -34,16 +34,16 @@ class Settings(BaseSettings):
     jwt_refresh_expiry: int = Field(60 * 24, description="JWT Token expiry in minutes")
 
     # email
-    mail_username: str = Field("", description="The email username")
-    mail_password: str = Field("", description="The email password")
-    mail_server: str = Field("localhost", description="The email server ip")
+    mail_host: str = Field("localhost", description="The email server ip")
     mail_port: int = Field(1025, description="The email server port")
+    mail_user: str = Field("", description="The email username")
+    mail_password: str = Field("", description="The email password")
     mail_use_credentials: bool = Field(
         False, description="Whether to log in to the smtp server"
     )
     mail_start_tls: bool = Field(False)
     mail_use_tls: bool = Field(False, description="Whether to connect over tls")
-    mail_from: str = Field("events@company.com", description="The sender's email")
+    mail_from_email: str = Field("events@company.com", description="The sender's email")
     mail_from_name: str = Field("Company Events", description="The sender's name")
 
     model_config = SettingsConfigDict(env_file=".env")

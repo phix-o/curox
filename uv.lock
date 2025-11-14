@@ -249,6 +249,13 @@ dev = [
     { name = "pytest-cov" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "httpx" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "alembic", specifier = ">=1.13.2,<1.14.0" },
@@ -271,6 +278,13 @@ requires-dist = [
     { name = "uvicorn", specifier = ">=0.34.3" },
 ]
 provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "httpx", specifier = ">=0.27.2" },
+    { name = "pytest", specifier = ">=8.2.2" },
+    { name = "pytest-cov", specifier = ">=5.0.0" },
+]
 
 [[package]]
 name = "exceptiongroup"

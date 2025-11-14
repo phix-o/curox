@@ -6,7 +6,8 @@ htmlcov/
 
 tmp/
 
-.env
+.env*
+!.env.example
 .pdf
 
 static/*
