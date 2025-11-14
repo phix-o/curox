@@ -27,6 +27,17 @@ services:
     environment:
       MP_MAX_MESSAGES: 5000
 
+  redis:
+    image: redis:7-alpine
+    container_name: events_redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: .
@@ -37,6 +48,8 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_started
+      redis:
+        condition: service_healthy
     environment:
       DB_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-events_db}
       MAIL_HOST: mailpit
@@ -44,6 +57,8 @@ services:
       MAIL_USER: ${SMTP_USER:-user}
       MAIL_PASSWORD: ${SMTP_PASSWORD:-password}
       MAIL_FROM_EMAIL: ${SMTP_FROM_EMAIL:-noreply@events.com}
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_PORT:-6379}
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:

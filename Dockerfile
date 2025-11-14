@@ -2,8 +2,9 @@ FROM python:3.13-slim
 
 WORKDIR /app
 
-COPY requirements.txt ./
 RUN apt update && apt install build-essential -y
+
+COPY requirements.txt ./
 RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
 
 COPY docker-entrypoint.sh /usr/local/bin

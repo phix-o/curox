@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     mail_from_email: str = Field("events@company.com", description="The sender's email")
     mail_from_name: str = Field("Company Events", description="The sender's name")
 
+    # redis
+    redis_host: str = Field("localhost", description="Redis server host")
+    redis_port: int = Field(6379, description="Redis server port")
+    redis_db: int = Field(0, description="Redis database number")
+
     model_config = SettingsConfigDict(env_file=".env")
 
     # This is here to remove the warning where instantiating the

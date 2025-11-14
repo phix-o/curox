@@ -19,6 +19,7 @@ from src.common.exceptions import (
 )
 from src.common.utils.responses import CustomResponse, build_response
 from src.core.auth.bearer import JWTBearer
+from src.core.cache import CacheDep
 from src.features.auth.dependencies import UserRepoDep
 from src.features.auth.models import UserModel
 from src.features.auth.schemas import UserCreate
@@ -47,29 +48,59 @@ router = APIRouter(
     name="companies-list",
     response_model=CustomResponse[list[CompanyDetailsSchema]],
 )
-def list_companies(request: Request, repo: CompaniesRepoDep, staff_repo: StaffRepoDep):
+def list_companies(
+    request: Request,
+    repo: CompaniesRepoDep,
+    staff_repo: StaffRepoDep,
+    cache: CacheDep,
+):
     user = request.user
+
+    # Create cache key based on user and staff status
     as_staff = staff_repo.get_by_column(StaffModel.user_id == user.id)
+    cache_key = f"companies:user:{user.id}:staff:{as_staff.id if as_staff else 'none'}"
+
+    # Try to get from cache
+    cached_companies = cache.get(cache_key)
+    if cached_companies is not None:
+        companies = [
+            CompanyDetailsSchema.model_validate_json(company)
+            for company in cached_companies
+        ]
+        return build_response(companies)
+
+    # Fetch from database
     if as_staff:
         companies = repo.get_all(CompanyModel.id == as_staff.company_id)
     else:
         companies = repo.get_all(CompanyModel.owner_id == user.id)
 
+    # Cache the result
+    companies_to_cache = [
+        CompanyDetailsSchema.model_validate(company).model_dump_json()
+        for company in companies
+    ]
+    cache.set(cache_key, companies_to_cache)
+
     return build_response(companies)
 
 
 @router.post(
-    "/", name="companies-create", response_model=CustomResponse[CompanyDetailsSchema]
+    "/",
+    name="companies-create",
+    response_model=CustomResponse[CompanyDetailsSchema],
 )
 def create_company(
     request: Request,
     repo: CompaniesRepoDep,
+    cache: CacheDep,
     name: Annotated[str, Form(description="The company name")],
     logo: Annotated[UploadFile, File(description="The company logo")],
 ):
     user: UserModel = request.user
     company = repo.create_one(user, name, logo)
 
+    cache.clear_pattern(f"companies:user:{user.id}:*")
     return build_response(company)
 
 
