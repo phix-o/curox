@@ -1,0 +1,49 @@
+image: python:3.12.3-alpine
+
+stages:
+  - test
+  - deploy
+
+variables:
+  DEBUG: true
+  DB_URL: postgresql://postgres:password@localhost:5432/curiox
+
+  JWT_ACCESS_EXPIRY: 60
+  JWT_REFRESH_EXPIRY: 60
+
+default:
+  before_script:
+    # ------------------- SSH Setup ------------------- #
+    # https://docs.gitlab.com/ee/ci/examples/deployment/composer-npm-deploy.html#security-tip
+    - 'which ssh-agent || ( apk update && apk add openssh )'
+    - mkdir -p ~/.ssh
+    - eval $(ssh-agent -s)
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    # ------------------- END Setup ------------------- #
+
+dev-test:
+  stage: test
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'dev'
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  script:
+    - apk add curl
+    - curl -sSL https://install.python-poetry.org | python3 -   # Install poetry
+    - export PATH="/root/.local/bin:$PATH"                      # Add poetry bin to path
+    - poetry install                                            # Install dependencies
+    - poetry run pytest --cov-report xml
+  coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+dev-deploy:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'dev'
+  script:
+    - ssh-add <(echo "$VM_PRIVATE_KEY")
+    - ssh <user>@<host> < deploy.sh
+

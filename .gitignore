@@ -1,0 +1,13 @@
+__pycache__/
+.pytest_cache/
+
+.coverage
+htmlcov/
+
+tmp/
+
+.env
+.pdf
+
+static/*
+!default_company_logo.png

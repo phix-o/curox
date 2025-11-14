@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p>Hi {{ first_name }}</p>
+<br />
+<p>You have been added as a staff member to the company {{ company_name }} by {{ adder_email }}</p>
+
+<br />
+<h3>How to access your account:</h3>
+<ul>
+	<li>Login Page: <a href="{{ web_url }}">Click Here</a></li>
+	<li>Login Email: <b>{{ email }}</b></li>
+	<li>Your Password: <b>{{ password }}</b></li>
+</ul>
+
+<br />
+<b>Note</b>
+<p>Do not share this password with anyone, not even us</p>
+{% endblock content %}
