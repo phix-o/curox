@@ -13,4 +13,3 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 COPY . ./
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-# CMD ["fastapi", "run", "src/main.py", "--port", "8000"]

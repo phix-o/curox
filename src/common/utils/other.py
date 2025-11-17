@@ -5,6 +5,7 @@ from src.main import app
 
 def reverse(name: str) -> str:
     """Get a route by name from a ``FastAPI`` application."""
+
     results = [
         route
         for route in app.routes

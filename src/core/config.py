@@ -16,13 +16,16 @@ class Settings(BaseSettings):
     db_url: str
     debug: bool = Field(False, description="Whether the app is in debug mode")
     web_url: str = Field(
-        "http://localhost:5173", description="The url of the main frontend app"
+        "http://localhost:5173",
+        description="The url of the main frontend app",
     )
     static_url: str = Field(
-        "http://localhost:7000", description="The static url for file system storage"
+        "http://localhost:7000",
+        description="The static url for file system storage",
     )
     static_path: str = Field(
-        "/static", description="The path where static files are uploaded"
+        "/static",
+        description="The path where static files are uploaded",
     )
 
     secret_key: str = Field(

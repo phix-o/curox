@@ -20,7 +20,9 @@ class CustomHTTPException(HTTPException):
 
 class BadRequestException(CustomHTTPException):
     def __init__(
-        self, detail="Invalid request", data: dict[str, str] | None = None
+        self,
+        detail: str = "Invalid request",
+        data: dict[str, str] | None = None,
     ) -> None:
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST, detail=detail, data=data
@@ -30,7 +32,7 @@ class BadRequestException(CustomHTTPException):
 class NotFoundException(HTTPException):
     def __init__(
         self,
-        detail="The resource with the given id does not exist",
+        detail: str = "The resource with the given id does not exist",
     ) -> None:
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -39,10 +41,10 @@ class NotFoundException(HTTPException):
 
 
 class UnauthorisedException(HTTPException):
-    def __init__(self, detail="You do not have permission to proceed"):
+    def __init__(self, detail: str = "You do not have permission to proceed"):
         super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
 
 
 class UniqueValidationError(HTTPException):
-    def __init__(self, detail="This record does not satisfy constraints"):
+    def __init__(self, detail: str = "This record does not satisfy constraints"):
         super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
