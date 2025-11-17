@@ -1,15 +1,15 @@
-
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Generator
 
 from sqlalchemy import ColumnExpressionArgument
 from sqlalchemy.orm import Query, Session
 
 from src.core.database import BaseModelMixin, SessionLocal
 
-T = TypeVar('T', bound=BaseModelMixin)
+T = TypeVar("T", bound=BaseModelMixin)
+
 
 class RepoBase(Generic[T]):
-    model = T
+    model: type[T]
 
     def __init__(self, db: Session):
         self.db = db
@@ -23,7 +23,7 @@ class RepoBase(Generic[T]):
     def get_by_id(self, id: int) -> T | None:
         model = self.model
         return self.db.query(model).filter(model.id == id).first()
-    
+
     def get_by_column(self, *criterion: ColumnExpressionArgument[bool]) -> T | None:
         return self.db.query(self.model).filter(*criterion).first()
 
@@ -34,8 +34,9 @@ class RepoBase(Generic[T]):
         q = self.db.query(self.model).filter(*criterion)
         return self.db.query(q.exists()).scalar()
 
-def get_repo(repo_cls: type[RepoBase]):
-    def inner():
+
+def get_repo(repo_cls: type[RepoBase[T]]):
+    def inner() -> Generator[RepoBase[T]]:
         db = SessionLocal()
         repo = repo_cls(db)
         try:

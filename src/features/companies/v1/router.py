@@ -76,10 +76,13 @@ def list_companies(
         companies = repo.get_all(CompanyModel.owner_id == user.id)
 
     # Cache the result
-    companies_to_cache = [
-        CompanyDetailsSchema.model_validate(company).model_dump_json()
-        for company in companies
-    ]
+    companies_to_cache = None
+    if companies:
+        companies_to_cache = [
+            CompanyDetailsSchema.model_validate(company).model_dump_json()
+            for company in companies
+        ]
+    
     cache.set(cache_key, companies_to_cache)
 
     return build_response(companies)
@@ -203,7 +206,7 @@ def add_company_staff(
     user_repo: UserRepoDep,
 ):
     user = request.user
-    if cast(int, company.owner_id) != user.id:
+    if company.owner_id != user.id:
         raise UnauthorisedException
 
     user_exists = user_repo.exists(UserModel.email == user_data.email)
@@ -256,7 +259,7 @@ def list_company_events(
             raise UnauthorisedException()
     else:
         # Check if this is the owner (who is not a staff member)
-        if cast(int, company.owner_id) != user.id:
+        if company.owner_id != user.id:
             raise UnauthorisedException()
 
     events = events_repo.get_all(EventModel.company_id == company.id)
