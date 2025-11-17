@@ -86,8 +86,8 @@ class CacheManager(Generic[T]):
 
 
 
-def get_cache_manager():
-    return CacheManager()
+def get_cache_manager() -> CacheManager[Any]:
+    return CacheManager[Any]()
 
 
-CacheDep = Annotated[CacheManager, Depends(get_cache_manager)]
+CacheDep = Annotated[CacheManager[T], Depends(get_cache_manager)]

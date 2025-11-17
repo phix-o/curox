@@ -64,7 +64,6 @@ README.md
 # Docker
 Dockerfile
 docker-compose.yml
-docker-entrypoint.sh
 
 # Miscellaneous
 *.log

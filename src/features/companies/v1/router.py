@@ -1,4 +1,4 @@
-from typing import Annotated, cast
+from typing import Annotated, Any, cast
 
 from fastapi import (
     APIRouter,
@@ -35,7 +35,7 @@ from src.features.events.dependencies import EventsRepoDep
 from src.features.events.models import EventModel
 from src.features.events.schemas import EventSchema
 
-from ..dependencies import CompaniesRepoDep, StaffRepoDep
+from ..dependencies import CompaniesCacheDep, CompaniesRepoDep, StaffRepoDep
 from ..utils import notify_staff_of_add
 
 router = APIRouter(
@@ -52,7 +52,7 @@ def list_companies(
     request: Request,
     repo: CompaniesRepoDep,
     staff_repo: StaffRepoDep,
-    cache: CacheDep,
+    cache: CompaniesCacheDep,
 ):
     user = request.user
 
@@ -93,7 +93,7 @@ def list_companies(
 def create_company(
     request: Request,
     repo: CompaniesRepoDep,
-    cache: CacheDep,
+    cache: CacheDep[list[dict[str, Any]]],
     name: Annotated[str, Form(description="The company name")],
     logo: Annotated[UploadFile, File(description="The company logo")],
 ):
@@ -108,7 +108,8 @@ company_router = APIRouter(prefix="/{company_id}")
 
 
 def get_company(
-    repo: CompaniesRepoDep, company_id: int = Path(description="The company id")
+    repo: CompaniesRepoDep,
+    company_id: int = Path(description="The company id"),
 ):
     company = repo.get_by_id(company_id)
     if company is None:
@@ -121,11 +122,13 @@ CompanyDep = Annotated[CompanyModel, Depends(get_company)]
 
 
 @company_router.get(
-    "/", name="company-details", response_model=CustomResponse[CompanyDetailsSchema]
+    "/",
+    name="company-details",
+    response_model=CustomResponse[CompanyDetailsSchema],
 )
 def get_company_details(request: Request, company: CompanyDep):
     user = request.user
-    if cast(int, company.owner_id) != user.id:
+    if company.owner_id != user.id:
         raise UnauthorisedException()
 
     return build_response(company)
@@ -139,12 +142,14 @@ def update_company_details(
     company: CompanyDep,
     company_data: CompanyUpdateSchema,
     repo: CompaniesRepoDep,
+    cache: CompaniesCacheDep,
 ):
     user = request.user
-    if cast(int, company.owner_id) != user.id:
+    if company.owner_id != user.id:
         raise UnauthorisedException()
 
     company = repo.update(company_data, company)
+    cache.clear_pattern(f"companies:user:{user.id}:*")
     return build_response(company)
 
 
@@ -154,12 +159,14 @@ def update_avatar(
     logo: Annotated[UploadFile, File(description="The company logo")],
     company: CompanyDep,
     repo: CompaniesRepoDep,
+    cache: CompaniesCacheDep,
 ):
     user = request.user
     if user.id != company.owner_id:
         raise UnauthorisedException()
 
     url = repo.update_logo(company, logo)
+    cache.clear_pattern(f"companies:user:{user.id}:*")
     return build_response(url)
 
 
